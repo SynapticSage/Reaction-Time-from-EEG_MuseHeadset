@@ -7,15 +7,50 @@ function [C,S] = coh_spec_andTriggerCut(eegStruct,varargin)
 % (time, frequency, trigger). Otherwise, it returns whole cohero- and
 % spectrograms indexed by simply (time,frequency).
 
-%% Pre-processing
-
 % Parse optional inputs -- these outputs will be empty if the user didn't
 % pass any optional inputs. If they are not empty, they change the behavior
 % of the function.
-[trigInfo] = parseOptionalInput(varargin);
+p =inputParser;
+p.addParamValue('triggers',[],@isnumeric);      % Trigger input
+p.addParamValue('window',[-3 2],@isnumeric);    % Window around trigger
+p.parse(varargin{:});
+win = p.Results.window; trig = p.Results.triggers;
+
+%% Define Default Chronux params
+% -------------------------------------------  
+params.Fs = double(eegStruct.configuration.eeg_output_frequency_hz);
+params.fpass = [0 50];
+params.tapers = [4 7]; %[5 2/5 0]; % [time_bandwidth_prod, taper_count] .. or [bandwidth, time, taper-reduction]
+params.err = [2 0.05];
+params.pad = 1;
+if exist('structstruct.m','file')
+	% Print parameters to screen if pretty struct print is in path
+    structstruct(params);
+end
+
+%% Define a moving window 
+
+	movingwin = getMovingwin( range(params.fpass), params);
+
+	function movingwin = getMovingwin(fpassrange,params)
+		% Just like the commented out routine below, the time*freq product
+		% is kept constant and produces the same results as the above taken
+		% from other code in our database; this is more flexible because it
+		% works for any inputted frequency.
+        
+        if numel(params.tapers) == 2
+            lengthmovwin = 200/fpassrange;
+            stepsize = lengthmovwin/10;
+            movingwin = [lengthmovwin stepsize];
+        end
+        if numel(params.tapers) == 3
+            movingwin = [tapers(2) tapers(2)/10];
+		end
+        
+    end
 
 % Alias terms we'll use
-raw = eegStruct.raw
+raw = eegStruct.raw;
 
 %% Compute Main Spectrograms and Coherograms
 % Figure out how many electrodes we're dealing with from the column
@@ -24,8 +59,8 @@ nElectrodes = size(raw,2);
 ePairs = combnk( 1:nElectrodes , 2 );
 
 % Inititalize
-C = {};
-S = {};
+C   = {};
+S   = {};
 phi = {};
 
 % Now, per pair, compute! master C and S components
@@ -40,7 +75,7 @@ for e = ePair'
         C{e1}{e2} = C12;
         phi{e1}{e2} = phi12;
     catch % If it's not initialized, then initialize first
-        C{e1} = {}; phi{e1}{e2} = {};
+        C{e1} = {}; C{e1}{e2} = {};
         C{e1}{e2} = C12;
         phi{e1}{e2} = phi12;
     end
@@ -52,10 +87,6 @@ end
 %% (Optionally) Slice out triggered segments
 
 if ~isempty(trigInfo)
-    
-    % Alias the fields
-    win=trigInfo.win;
-    trigs = trigInfo.trigs;
     
     % Now, we start to do the slicing
     for e = ePair'
@@ -70,19 +101,6 @@ if ~isempty(trigInfo)
     end
     
 end
-
-%% HelperFunction: parseOptionalInput
-    function trigInfo = parseOptionalInput(var)
-        trigInfo = [];
-        for v = 1:2:numel(var)
-            switch var{v}
-                case 'triggers',    trigInfo.trigs = var{v+1};
-                case 'window',      trigInfo.win = var{v+1};
-                otherwise
-                    warning('Unrecognized input %s', var{v});
-            end
-        end
-    end
 
 %% HelperFunction: sliceOutTriggers
 % Inputs: spectrogram or spectrogram-like object, triggers and a window.

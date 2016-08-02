@@ -2,19 +2,19 @@
 # coding: utf-8
 
 # # Table of Contents
-#  <p><div class="lev1 toc-item"><a href="#Preamble" data-toc-modified-id="Preamble-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Preamble</a></div><div class="lev1 toc-item"><a href="#Input-CSV" data-toc-modified-id="Input-CSV-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Input CSV</a></div><div class="lev1 toc-item"><a href="#Modify-Muse-CSV" data-toc-modified-id="Modify-Muse-CSV-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Modify Muse CSV</a></div><div class="lev1 toc-item"><a href="#Data-Scrub:-Muse-File" data-toc-modified-id="Data-Scrub:-Muse-File-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Data Scrub: Muse File</a></div><div class="lev2 toc-item"><a href="#Unique-row-components" data-toc-modified-id="Unique-row-components-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Unique row components</a></div><div class="lev2 toc-item"><a href="#Helper-Functions" data-toc-modified-id="Helper-Functions-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Helper Functions</a></div><div class="lev2 toc-item"><a href="#Data-Structure-Creation" data-toc-modified-id="Data-Structure-Creation-4.3"><span class="toc-item-num">4.3&nbsp;&nbsp;</span>Data Structure Creation</a></div><div class="lev3 toc-item"><a href="#Functional-Data-Structure" data-toc-modified-id="Functional-Data-Structure-4.3.1"><span class="toc-item-num">4.3.1&nbsp;&nbsp;</span>Functional Data Structure</a></div><div class="lev4 toc-item"><a href="#EEG" data-toc-modified-id="EEG-4.3.1.1"><span class="toc-item-num">4.3.1.1&nbsp;&nbsp;</span>EEG</a></div><div class="lev4 toc-item"><a href="#Behavior" data-toc-modified-id="Behavior-4.3.1.2"><span class="toc-item-num">4.3.1.2&nbsp;&nbsp;</span>Behavior</a></div><div class="lev4 toc-item"><a href="#Description" data-toc-modified-id="Description-4.3.1.3"><span class="toc-item-num">4.3.1.3&nbsp;&nbsp;</span>Description</a></div><div class="lev1 toc-item"><a href="#Data-Scrub:-Game-File" data-toc-modified-id="Data-Scrub:-Game-File-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Data Scrub: Game File</a></div><div class="lev2 toc-item"><a href="#Modify/Input-Space-separated-File" data-toc-modified-id="Modify/Input-Space-separated-File-5.1"><span class="toc-item-num">5.1&nbsp;&nbsp;</span>Modify/Input Space-separated File</a></div><div class="lev2 toc-item"><a href="#Bring-into-pandas.DataFrame" data-toc-modified-id="Bring-into-pandas.DataFrame-5.2"><span class="toc-item-num">5.2&nbsp;&nbsp;</span>Bring into <code>pandas.DataFrame</code></a></div><div class="lev2 toc-item"><a href="#Create-game-dict-of-numpy-arrays" data-toc-modified-id="Create-game-dict-of-numpy-arrays-5.3"><span class="toc-item-num">5.3&nbsp;&nbsp;</span>Create <code>game</code> dict of <code>numpy</code> arrays</a></div><div class="lev1 toc-item"><a href="#Saving-Data" data-toc-modified-id="Saving-Data-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Saving Data</a></div><div class="lev2 toc-item"><a href="#Matlab-Native" data-toc-modified-id="Matlab-Native-6.1"><span class="toc-item-num">6.1&nbsp;&nbsp;</span>Matlab Native</a></div><div class="lev2 toc-item"><a href="#Python-Native" data-toc-modified-id="Python-Native-6.2"><span class="toc-item-num">6.2&nbsp;&nbsp;</span>Python Native</a></div><div class="lev3 toc-item"><a href="#Data-Frame" data-toc-modified-id="Data-Frame-6.2.1"><span class="toc-item-num">6.2.1&nbsp;&nbsp;</span>Data Frame</a></div><div class="lev3 toc-item"><a href="#EEG-/-Behavior-Dictionaries" data-toc-modified-id="EEG-/-Behavior-Dictionaries-6.2.2"><span class="toc-item-num">6.2.2&nbsp;&nbsp;</span>EEG / Behavior Dictionaries</a></div>
+#  <p><div class="lev1 toc-item"><a href="#Preamble" data-toc-modified-id="Preamble-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Preamble</a></div><div class="lev1 toc-item"><a href="#Input-CSV" data-toc-modified-id="Input-CSV-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Input CSV</a></div><div class="lev1 toc-item"><a href="#Modify-Muse-CSV" data-toc-modified-id="Modify-Muse-CSV-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Modify Muse CSV</a></div><div class="lev1 toc-item"><a href="#Data-Scrub:-Muse-File" data-toc-modified-id="Data-Scrub:-Muse-File-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>Data Scrub: Muse File</a></div><div class="lev2 toc-item"><a href="#Bring-into-pandas.DataFrame" data-toc-modified-id="Bring-into-pandas.DataFrame-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Bring into <code>pandas.DataFrame</code></a></div><div class="lev2 toc-item"><a href="#Unique-row-components" data-toc-modified-id="Unique-row-components-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Unique row components</a></div><div class="lev2 toc-item"><a href="#Helper-Functions" data-toc-modified-id="Helper-Functions-4.3"><span class="toc-item-num">4.3&nbsp;&nbsp;</span>Helper Functions</a></div><div class="lev2 toc-item"><a href="#Data-Structure-Creation" data-toc-modified-id="Data-Structure-Creation-4.4"><span class="toc-item-num">4.4&nbsp;&nbsp;</span>Data Structure Creation</a></div><div class="lev3 toc-item"><a href="#Functional-Data-Structure" data-toc-modified-id="Functional-Data-Structure-4.4.1"><span class="toc-item-num">4.4.1&nbsp;&nbsp;</span>Functional Data Structure</a></div><div class="lev4 toc-item"><a href="#Dict:-eeg" data-toc-modified-id="Dict:-eeg-4.4.1.1"><span class="toc-item-num">4.4.1.1&nbsp;&nbsp;</span>Dict: <code>eeg</code></a></div><div class="lev4 toc-item"><a href="#Dict:-behavior" data-toc-modified-id="Dict:-behavior-4.4.1.2"><span class="toc-item-num">4.4.1.2&nbsp;&nbsp;</span>Dict: <code>behavior</code></a></div><div class="lev4 toc-item"><a href="#Description" data-toc-modified-id="Description-4.4.1.3"><span class="toc-item-num">4.4.1.3&nbsp;&nbsp;</span>Description</a></div><div class="lev1 toc-item"><a href="#Data-Scrub:-Game-File" data-toc-modified-id="Data-Scrub:-Game-File-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Data Scrub: Game File</a></div><div class="lev2 toc-item"><a href="#Modify/Input-Space-separated-File" data-toc-modified-id="Modify/Input-Space-separated-File-5.1"><span class="toc-item-num">5.1&nbsp;&nbsp;</span>Modify/Input Space-separated File</a></div><div class="lev2 toc-item"><a href="#Bring-into-pandas.DataFrame" data-toc-modified-id="Bring-into-pandas.DataFrame-5.2"><span class="toc-item-num">5.2&nbsp;&nbsp;</span>Bring into <code>pandas.DataFrame</code></a></div><div class="lev2 toc-item"><a href="#Dict:-game" data-toc-modified-id="Dict:-game-5.3"><span class="toc-item-num">5.3&nbsp;&nbsp;</span>Dict: <code>game</code></a></div><div class="lev1 toc-item"><a href="#Saving-Data" data-toc-modified-id="Saving-Data-6"><span class="toc-item-num">6&nbsp;&nbsp;</span>Saving Data</a></div><div class="lev2 toc-item"><a href="#Matlab-Native" data-toc-modified-id="Matlab-Native-6.1"><span class="toc-item-num">6.1&nbsp;&nbsp;</span>Matlab Native</a></div><div class="lev2 toc-item"><a href="#Python-Native" data-toc-modified-id="Python-Native-6.2"><span class="toc-item-num">6.2&nbsp;&nbsp;</span>Python Native</a></div><div class="lev3 toc-item"><a href="#Pickle-Data-Frames" data-toc-modified-id="Pickle-Data-Frames-6.2.1"><span class="toc-item-num">6.2.1&nbsp;&nbsp;</span>Pickle Data Frames</a></div><div class="lev3 toc-item"><a href="#Pickle-EEG-/-Behavior-/-Game-Dictionaries" data-toc-modified-id="Pickle-EEG-/-Behavior-/-Game-Dictionaries-6.2.2"><span class="toc-item-num">6.2.2&nbsp;&nbsp;</span>Pickle EEG / Behavior / Game Dictionaries</a></div>
 
-# **MUSE CSV SCRUB**
+# **MUSE AND GAME FILE SCRUB**
 # 
 #  Author | Ryan Y. 
 # --------|--------
-#  Point |  Carves up the huge Muse CSV file to separate data for the different submodules, then saves it into several data types usesable by python and matlab. For one, the entire data set is put into an easy but space expensive data frame format (saved), and into less expensive array formats stored into specific keys dictionaries. These dictionaries are sort of like matlab structs, who store specific things about the eeg signals and behavior in their fields. |
+#  Point |  Firstly, this script carves up the huge Muse CSV file to separate data for the different submodules, then saves it into several data types usesable by python and matlab. For one, the entire data set is put into an easy but space expensive data frame format (saved), and into less expensive array formats stored into specific keys dictionaries. These dictionaries are sort of like matlab structs, who store specific things about the eeg signals and behavior in their fields. Two, it processes the game file that tracks game behavior. |
 # Inputs | File path to a Muse CSV File, <a href="#csvinput">type into widget below</a>. This scrubber expects the game file to have the same title, but `.txt` instead of `.csv`.
 # Outputs| A functional structure and sampling rate structures in formats readable by python and matlab |
 
 # # Preamble
 
-# In[35]:
+# In[196]:
 
 # --- FLAGS AND BASIC SETTINGS --------------
 # Plot options
@@ -66,12 +66,12 @@ from IPython.display import Javascript, display
 pandas.set_option('display.mpl_style', 'default') 
 pandas.set_option('display.line_width', 500) 
 pandas.set_option('display.max_columns', 60)
-pandas.set_option('display.max_rows',10)
+pandas.set_option('display.max_rows',30)
 # -----------------
 
 # ---INPUT WIDGET ---
 cfile = widgets.Text(
-    '/Users/ryoung/Documents/LabRotations/Sekuler/Data/outputPilot1.csv',
+    '/Users/ryoung/Data/Sekuler/outputPilot1.csv',
     description='Please provide CSV File:',
     border_radius='3px',
     color='darkred',
@@ -85,7 +85,7 @@ cfile = widgets.Text(
 # # Input CSV
 # <a id="csvinput"></a>
 
-# In[36]:
+# In[197]:
 
 display(cfile)
 
@@ -93,7 +93,7 @@ display(cfile)
 # # Modify Muse CSV
 # This step accomplishes two things. For one, it actually reduces the size of the csv by killing the spaces. Commas are the delimiters, so it has no effect expect to reduce file size. Second, our csvfile needs header names in the first row, to build a data frame.
 
-# In[9]:
+# In[169]:
 
 # OPEN FILE AND FIGURE OUT HOW MANY COLUMNS EXIST
 with open(cfile.value,mode='r+') as file:
@@ -152,10 +152,12 @@ del(nColumns)
 
 # # Data Scrub: Muse File
 # 
+# ## Bring into `pandas.DataFrame`
+# 
 # Below, a csv file is read in as a data frame. It's a flexible convenient object that will allow practically any data type encountered across csv rows with various amounts of columns. Subsequently, from the `pandas.DataFrame` object, we extract all the data into a nicer dictionary structure.
 # 
 
-# In[10]:
+# In[170]:
 
 # Load csv into memory
 D = pandas.read_csv(cfile.value,low_memory=True)
@@ -167,7 +169,7 @@ D
 # 
 # The image is a binary mask describing where data lives. **Black** indicates data lives there, **White** is void. The long black streaks are the fft packets. They appear to dump at irregular times.
 
-# In[11]:
+# In[171]:
 
 if plot_data_aspects:
     NullMat=D.isnull().as_matrix()
@@ -180,19 +182,20 @@ if plot_data_aspects:
 # 
 # There are currently 34 components dumped into the muse data
 
-# In[12]:
+# In[172]:
 
 # Acquire and print out all unique components
 uniques = pandas.Series(D['Submod']).unique()
+value_counts = pandas.Series(D['Submod']).value_counts()
 print('UNIQUE PACKET TYPES\n' + "-"*90)
 for i,u in enumerate(uniques):
-    print("(%d)\t%s" % (i,u))
+    print("(%d)\t[%d count]\t%s" % (i,value_counts[u],u))
 
 
 # ## Helper Functions
 # Some functions that will make our lives easier below
 
-# In[13]:
+# In[173]:
 
 def find_rightmost_empty(M):
     '''
@@ -287,9 +290,9 @@ def extract_into(into,at,what,rowtype):
 # This structure groups things by how the data types are used and follow the following structure,
 # `eeg` set containing `raw` components and `processed` components. Processed contains the **Muse** processed elements in the various frequency bands.
 # 
-# #### EEG
+# #### Dict: `eeg`
 
-# In[26]:
+# In[174]:
 
 # Our master structure to contain extracted data
 eeg = {};
@@ -297,7 +300,7 @@ eeg = {};
 
 # Here, we place raw data and its timestamps into the `eeg` dictionary
 
-# In[ ]:
+# In[175]:
 
 # Place raw data
 extract_into(eeg,['raw'],D,'/muse/eeg')
@@ -305,7 +308,7 @@ extract_into(eeg,['raw'],D,'/muse/eeg')
 
 # A little extra processing to separate DRL and REF into separate elements. This is so that signal electrode portion remains robust to change. If last two columns are DRL and REF, and if in the future, if sets the option to not print them in muse (readable from /muse/config) to not write said signals in /eeg/raw, this will be rather easy to place an if statement below and electrode signals thusly always are under a separate key. Otherwise, I can forsee people hardcoding exclusions of the last two columns in downstream analysis, columns that might disappear depending on muse options.
 
-# In[28]:
+# In[176]:
 
 # Separate REF/DRL components into different terms
 eeg['misc'] = {}
@@ -317,7 +320,7 @@ eeg['raw'] = np.delete(eeg['raw'], (-1), 1)
 print(eeg['raw'].shape)
 
 
-# In[30]:
+# In[177]:
 
 # Show data, if option given
 if plot_data_aspects:
@@ -329,8 +332,10 @@ if plot_data_aspects:
     ax.set_ylabel('uVolt')
     ax.set_title('Signal Electrodes')
     plt.legend(list(range(eeg['raw'][:,1:5].shape[0])))
-    plt.subplot(3,1,2)
+    ax=plt.subplot(3,1,2)
     plt.plot(eeg['raw'][:,0],eeg['misc']['drl'],alpha=0.2)
+    ax.set_title('DRL (Driven Right Leg Circuit) Signal')
+    ax.set_xlabel('Seconds')
     ax=plt.subplot(3,1,3)
     plt.plot(eeg['raw'][:,0],eeg['misc']['ref'],alpha=0.2)
     ax.set_xlabel('Seconds')
@@ -343,7 +348,7 @@ if plot_data_aspects:
 
 # Now that raw data lives in the dictionary, we have relative and absolute signals that we can add to the dictionary.
 
-# In[45]:
+# In[178]:
 
 # Which fields to place into relatives and absolutes
 relatives = [
@@ -383,7 +388,7 @@ for elem in absolutes:
 
 # Last, the FFT should go into the `eeg` dictionary
 
-# In[46]:
+# In[179]:
 
 # Prepare to store fft data
 fft = [
@@ -411,18 +416,18 @@ for key,val in eeg['fft'].items():
 eeg['fft'] = fft[:,:,1:]
 
 
-# #### Behavior
+# #### Dict: `behavior`
 # 
 # First, create a behavior dictionary
 
-# In[47]:
+# In[180]:
 
 behavior = {}
 
 
 # Then, place the headband signals int that dictionary
 
-# In[48]:
+# In[181]:
 
 headband = [
     "/muse/elements/touching_forehead",
@@ -438,14 +443,13 @@ for elem in headband:
     extract_into(behavior,['headband',name],D,elem)
 
 
-# And then, and finally, place muscle signals into behavior
+# Next, muscle signals into `behavior`
 
-# In[49]:
+# In[182]:
 
 muscle = [
     "/muse/elements/blink",
-    "/muse/elements/jaw_clench",
-    "/muse/acc" # including accelorometer in the muscle signal dictionary/struct
+    "/muse/elements/jaw_clench"
 ]
 
 for elem in muscle:
@@ -456,19 +460,60 @@ for elem in muscle:
     extract_into(behavior,['muscle',name],D,elem)
 
 
+# Finally, acceleration
+
+# In[183]:
+
+extract_into(behavior,['accel'],D,'/muse/acc')
+
+
 # #### Description
 # Now that data are in place, here, a description field will be appended with descriptions of the data.
 
-# In[50]:
+# In[184]:
 
 # Appending descriptions for EEG dict
 eeg['desc'] = {}
 eeg['desc']['raw'] = "The first column indicate timestamps or time. The last two columns are DRL and REF signals that were used to reference the eeg signals present in columns 2 through end-2."
 eeg['desc']['abs_all'] = "Fields for each absolute power band extracted by Muse. Absolute band power is log(sum(PSD)) of the absolute frequency range. Within each band type, indicated by the fields, the first column is the timestamp or time. Remaining columns are the power present per field."
 eeg['desc']['rel_all'] = "Fields for each relative power band extracted by Muse. Relative power is gotten via first summing absolutes linear-power for a band by the sum of all linear-absolute power for all band types. Within each band type, indicated by the fields, the first column is the timestamp or time. Remaining columns are the power present per field."
-eeg['fft'] = "Each page of this 3D matrix corresponds to an electrode. The first column is timestamp value. The remaining columns are fft values for that timestamp. As of this version, 129 columns with power, each 0.86hz per bin (220/256). Symmetric portion of the 256 sample removed, thus 128 bins. The last bin is 0Hz."
+eeg['desc']['fft'] = "Each page of this 3D matrix corresponds to an electrode. The first column is timestamp value. The remaining columns are fft values for that timestamp. As of this version, 129 columns with power, each 0.86hz per bin (220/256). Symmetric portion of the 256 sample removed, thus 128 bins. The last bin is 0Hz."
+eeg['desc']['misc'] = "Holds the reference and DLG circuit signals, in case one would like to add reference or DLG back in."
 # Appending descriptions for the behavior dict
 behavior['desc'] = {}
+behavior['desc']['headband'] = "Signals regarding whether the subject has their headband touching/connected."
+behavior['desc']['muscles'] = "Signals regarding subjects eyeblink and jaw-clench."
+behavior['desc']['acc'] = "Signals regarding the subjects head acceleration."
+
+
+# And add the configuration information to the struct. The string has to be manipulated a bit before it's ready to add...
+
+# In[185]:
+
+last_conf = D[D['Submod'] == '/muse/config'].iloc[-1]
+last_conf = list(last_conf.values)
+last_conf = last_conf[2:]
+last_conf = list(map(lambda x: str(x), last_conf))
+for i,elem in enumerate(last_conf):
+    if elem == 'nan':
+        continue
+    if str.isalpha(elem[1]):
+        
+        last_conf[i] = '"' + last_conf[i]
+        
+        loc = last_conf[i].find(":")
+        last_conf[i] = last_conf[i][:loc] + '"' + last_conf[i][loc:]
+        
+conf_str = ''
+for i,elem in enumerate(last_conf):
+    if elem == "nan":
+        continue
+    else:
+        conf_str = conf_str + str(elem) + ", "
+
+conf_str = conf_str[1:-3]
+conf_str = re.sub("true","True",conf_str)
+eeg['configuration'] = eval(conf_str)
 
 
 # # Data Scrub: Game File
@@ -476,89 +521,117 @@ behavior['desc'] = {}
 # 
 # ## Modify/Input Space-separated File
 
-# In[9]:
+# In[186]:
 
-# game_header = ["timeInSecs","eventType","gameId", "userId", "level", "age","mode", "gameTime",
-#                    "lastBirth", "eventId", "visual", "audio", "side", "action", "actionTime",
-#                    "RT", "keyValue", "correct", "congruent"]
+game_header = ["timeInSecs","eventType","gameId", "userId", "level", "age","mode", "gameTime",
+                   "lastBirth", "eventId", "visual", "audio", "side", "action", "actionTime",
+                   "RT", "keyValue", "correct", "congruent"]
 
-# gamefile = re.sub(, cfile.value)
-# with open()
-# if lineone[0] != "Timestamps":
+gamefile = re.sub(r'\.csv','.txt', cfile.value)
+print('Gamefile = %s' % gamefile)
+
+# Read first line, to see if we should add header text
+with open(gamefile,'r') as file:
+    lineone = file.readline().split(' ')
+
+# Decide if we need to append a header
+if lineone[0] != game_header[0]:
     
-#     print('Fixing header with first line element %s\n\n' \
-#           % (lineone[0]))
-    
-#     # Construct individual cxolumn headers
-#     column_names = ['Timestamps', 'Submod']
-#     nColumns-=2
-#     for c in range(int(nColumns)):
-#         column_names.append(str(c))
-#     print("List of elements to place atop ==> %s\n\n" % str(column_names))
+    print('Fixing header with first line element %s\n\n'           % (lineone[0]))
 
-#     # Contruct the line to append
-#     header_string_to_write = "";
-#     for c in column_names:
-#         header_string_to_write += c + ","
-#     header_string_to_write = header_string_to_write[0:-1]
+    # Contruct the line to append
+    header_string_to_write = "";
+    for c in game_header:
+        header_string_to_write += c + " "
+    header_string_to_write = header_string_to_write[0:-1]
     
-#     # Prepend header to csv and kill any spaces (makes the file smaller and saves us pain below)
-#     for linenum,line in enumerate( fileinput.FileInput(cfile.value,inplace=1) ):
-#         if linenum is 0:
-#             print(header_string_to_write)
-#             print(line.rstrip())
-#         else:
-#             print( 
-#             re.sub(r'[\s]*',"", line.rstrip()) 
-#             )
-#     fileinput.close()
-# else:
-#     print('Header is good')
-
-# del(nColumns)
+    # Prepend header to csv
+    for linenum,line in enumerate( fileinput.FileInput(gamefile,inplace=1) ):
+        if linenum is 0:
+            print(header_string_to_write)
+            print(line.rstrip())
+        else:
+            print(line.rstrip())
+    fileinput.close()
+else:
+    print('Header is good')
 
 
 # ## Bring into `pandas.DataFrame`
+# Import into data frame and display it, to sanity check the data
 
-# ## Create `game` dict of `numpy` arrays 
+# In[187]:
+
+G = pandas.read_csv(gamefile,sep=' ')
+G.set_index('timeInSecs')
+G
+
+
+# ## Dict: `game`
+# Unlike the above section, getting a dict of our values here is going to be easy-cheesy. DataFrame has a nice method that will give us what we want.
+
+# In[188]:
+
+game = G.to_dict(orient='list')
+checkGameDict = False
+if checkGameDict:
+    str(game)
+
+
+# We now have a dict with a python list of values, but we should convert to numpy to help write to matlab format and to have type consistency.
+
+# In[189]:
+
+# Cast each list into numpy
+for key,val in game.items():
+    val = np.array(val,dtype='float64')
+    game[key] = val
+
 
 # # Saving Data
 
-# In[51]:
+# In[190]:
 
 # Acquire base directory and file for all save options
 dir,file = os.path.split(cfile.value)
+file,ext = os.path.splitext(file)
 
 
 # ## Matlab Native
 # Matlab can read the pickled dictionaries above and pretty easily turn them into strings, but scipy offers a more native approach, packaing and reading from .mat files with ease.
 
-# In[52]:
+# In[191]:
 
 savestr = dir + '/' + file + '.structs.mat'
-scipy.io.savemat( savestr, {'behavior':behavior, "eeg":eeg} )
+scipy.io.savemat( savestr, {'behavior':behavior, "eeg":eeg, "game":game} )
 
 
 # ## Python Native
-# ### Data Frame
+# ### Pickle Data Frames
 
-# In[53]:
+# In[192]:
 
 if save_data_frame:
-    file,ext = os.path.splitext(file)
-    D.to_pickle(dir + '/' + file + '.pandas.pickle')
+    D.to_pickle(dir + '/' + file + '.muse.pandas.pickle')
+    G.to_pickle(dir + '/' + file + '.game.pandas.pickle')
 
 
-# ### EEG / Behavior Dictionaries
+# ### Pickle EEG / Behavior / Game Dictionaries
 
-# In[54]:
+# In[193]:
 
 behaviorstr = dir + '/' + file + '.behavior.pickle'
 pickle.dump( behavior,  open(behaviorstr,  'wb'))
 
 
-# In[56]:
+# In[194]:
 
 eegstr = dir + '/' + file + '.eeg.pickle'
 pickle.dump( eeg,       open(eegstr,       'wb'))
+
+
+# In[195]:
+
+gamestr = dir + '/' + file + '.game.pickle'
+pickle.dump( game,       open(gamestr,       'wb'))
 
