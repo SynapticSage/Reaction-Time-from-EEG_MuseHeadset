@@ -1,4 +1,4 @@
-function [C,S] = coh_spec_andTriggerCut(eegStruct,varargin)
+function [C,S,M] = coh_spec_andTriggerCut(eegStruct,varargin)
 % This function accepts an eegstruct, and optionally, (1) a set of triggers
 % and a window and/or (2) Frequencys to summarize. From there, it computes
 % coherograms and spectrograms for all electrode combinations. It then cuts
@@ -10,11 +10,14 @@ function [C,S] = coh_spec_andTriggerCut(eegStruct,varargin)
 % Parse optional inputs -- these outputs will be empty if the user didn't
 % pass any optional inputs. If they are not empty, they change the behavior
 % of the function.
-p =inputParser;
-p.addParamValue('triggers',[],@isnumeric);      % Trigger input
-p.addParamValue('window',[-3 2],@isnumeric);    % Window around trigger
+p = inputParser;
+p.addParameter('triggers',[],@isnumeric);      % Trigger input
+p.addParameter('window',[-3 2],@isnumeric);    % Window around trigger
+p.addParameter('matchingpursuit',false,@islogical);% Whether to calculate matching-pursuit
 p.parse(varargin{:});
+
 win = p.Results.window; trig = p.Results.triggers;
+doMatchingPursuit = p.Results.matchingpursuit;
 
 %% Define Default Chronux params
 % -------------------------------------------  
@@ -98,16 +101,26 @@ if ~isempty(trigInfo)
         S{e1} = sliceOutTriggers(t, S{e1} , trigs, win);
         S{e2} = sliceOutTriggers(t, S{e2} , trigs, win);
         
-    end
-    
+        %% (Optionally) Handle Matching-pursuit calculations
+        if doMatchingPursuit
+            e1Wins = sliceOutTriggers(t,e1,trigs,win);
+            e2Wins = sliceOutTriggers(t,e1,trigs,win);
+            
+            
+        end
+    end    
 end
+
 
 %% HelperFunction: sliceOutTriggers
 % Inputs: spectrogram or spectrogram-like object, triggers and a window.
 
-    function Sout = sliceOutTriggers(t,S,trigs,win)
+    function Sout = sliceOutTriggers(t,S,trigs,win,varargin)
         
-        cellOutput = false;
+        optIn=inputParser;
+        optIn.addParameter('celloutput',false,@islogical);
+        optIn.parse(varargin{:});
+        cellOutput = optIn.Results.celloutput;
         
         % Slice everything into a cell -- sizes will not always be equal
         % because sampling rate has variability
@@ -152,4 +165,8 @@ end
         
     end
 
+%% HelperFunction: equalizeSizes
+% Inputs: cells of eeg, spectrogram or spectrogram-like objects
+    function out = equalizeSizes()
+    end
 end
