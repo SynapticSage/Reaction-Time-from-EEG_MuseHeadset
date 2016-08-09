@@ -53,15 +53,28 @@ clear m i s;
 % on to all of the struct elements
 eeg = applyTimes(m, touching_ranges);
 
-%% Acquire trigger times!
+%% (Optional) Acqruire Spectra/Coherence/MP at Triggers
 
 correct = getTime(m,{'game','correct','diff($val(:,2)==1) == 1'});
 incorrect = getTime(m,{'game','correct','diff($val(:,2)==-1) == 1'});
 
+window = [-3 0.5]; % 3 seconds before .. 0.5 seconds after
+[C_correct,S_correct,fsc_correct,M_correct,fmp_correct] = ...
+    triggeredCS( m.eeg, 'triggers', correct, 'window', window, 'matchingpursuit',true);
+[C_incorrect,S_incorrect,fsc_incorrect,M_incorrect,fmp_incorrect] = ...
+    triggeredCS( m.eeg, 'triggers', incorrect, 'window', window, 'matchingpursuit',true);
 
-%% (Optional) Acqruire Spectra/Coherence/MP at Triggers
+%% Create Subject Specific CI Matrix
+
+C = [ correct' ones(size(correct))'];
+I = [ incorrect' zeros(size(incorrect))'];
+CI = [C; I]; CI = sortrows(CI,1);
+
+clear correct incorrect;
 
 %%  Slice windows of time in all structures
+
+
 
 %% Prepare for GLM on half the data
 
