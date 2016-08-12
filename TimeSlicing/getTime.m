@@ -1,5 +1,5 @@
 function [out,logicalSlices] ...
-    = getTime(structX,controls,inclusionPeriodFlag)
+    = getTime(structX,controls,varargin)
 % function [out,logicalSlices] = getTime(structX,controls,inclusionPeriodFlag)
 % This function handles the finding of inclusion periods.
 % 
@@ -27,13 +27,22 @@ function [out,logicalSlices] ...
 %   logicalSlices.. binary vector indicating the times in the timestamp
 %                   vector where the control statement is true.
 
+% Check controls for flaws
 if ~(isrow(controls) || iscolumn(controls)) || ~iscell(controls) || ~ischar(controls)
     error('Improper control!');
 end
 
-if ~exist('inclusionPeriodFlag','var')
-    inclusionPeriodFlag=true;
-end
+
+% Parse optional inputs
+p = inputParser;
+p.addParameter('useinclusion',true,@islogical);     
+p.addParameter('eachseparate',false,@islogical);
+p.addParameter('window',[0 0],@(x) isnumerical(x) && numel(x)==2 && ~sum(x<0));
+p.parse(varargin{:});
+% Set variables controlled by optionals
+inclusionPeriodFlag = p.Results.useinclusion;
+eachSeparateFlag = p.Results.eachseparate; window = p.Results.window; 
+
 
 %% Get structural element requested, First N-1 = struct address
 % Theese are strings that indicate what item to look at in the structure,
@@ -72,9 +81,14 @@ end
 
 % Then, we translate this into either inclusion ranges, based on the
 % timestamps, or as a list of timepoints our statement is valid.
-if inclusionPeriodFlag && islogical(inclusionPeriodFlag)
-    out = getInclusionRange(timestamps,logicalSlices);
-else
+if inclusionPeriodFlag
+    if eachSeparateFlag
+        out = [timestamps( logicalSlices ) - window(1)...
+            timestamps( logicalSlices ) + window(2)]; 
+    else
+        out = getInclusionRange(timestamps,logicalSlices);
+    end
+else 
     out = timestamps( logicalSlices ); 
 end
 

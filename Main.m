@@ -66,14 +66,20 @@ m.game          = applyTimes(m.game, only1stEvent);
 
 %% Acquire key times for correct/incorrect and highRT/lowRT
 
+window = [1.5 0.5]; % 1.5 seconds before .. 0.5 seconds after
+
 % Acquire incorrect and correct timestamp ranges
-correct     = getTime(m.game.incorrect,'diff($val(:,2)==1) == 1');
-incorrect   = getTime(m.game.correct,'diff($val(:,2)==-1) == 1');
+correct     = getTime(m.game.incorrect,'$val(:,2) == 1',...
+    'eachseparate',true,'window',window);
+incorrect   = getTime(m.game.correct,'$val(:,2)==-1', ...
+    'eachseparate',true,'window',window);
 
 % Compute upper and lower quantile of reaction times
 rtMedian = median(m.game.reaction);
-highRT = getTime(m.game.reaction, ['$val > ' num2str(rtMedian)]);
-lowRT = getTime(m.game.reaction,['$val < ' num2str(rtMedian)]);
+highRT = getTime(m.game.reaction, ['$val > ' num2str(rtMedian)],...
+    'eachseparate',true,'window',window);
+lowRT = getTime(m.game.reaction,['$val < ' num2str(rtMedian)],...
+    'eachseparate',true,'window',window);
 
 
 %% (Optional) Acqruire Spectra/Coherence/MP at Triggers
@@ -85,7 +91,6 @@ lowRT = getTime(m.game.reaction,['$val < ' num2str(rtMedian)]);
 % where fft computed, and recompiling. For Chronux, change fft() outputs in
 % each of the matlab functions.
 
-% window = [-3 0.5]; % 3 seconds before .. 0.5 seconds after
 % [C_correct,S_correct,fsc_correct,M_correct,fmp_correct] = ...
 %     triggeredCS( m.eeg, 'triggers', correct, 'window', window, 'matchingpursuit',true);
 % [C_incorrect,S_incorrect,fsc_incorrect,M_incorrect,fmp_incorrect] = ...
@@ -104,11 +109,18 @@ L = [ incorrect' zeros(size(lowRT))'];
 RT = [H; L]; RT = sortrows(RT,1);
 
 % Clean up shop, some
-clear correct incorrect C I H L;
+clear correct incorrect lowRT highRT C I H L;
 
-%%  Slice windows of time in all structures
+%%  Acquire GLM variables given those windows of time
 
-% 
+% Slice out first half of time
+half_times = getTime(eeg.raw,'%val(:,1) > median(val(:,1))');
+m_half = applyTimes(m,half_times);
+
+% Cut segements of data into GLMable matrices, with appropriate meta data
+% to help reconstruct the managerie of different data in each trial row of
+% the matrix
+cutSegments();
 
 
 %% Prepare for GLM on half the data
