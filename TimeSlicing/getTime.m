@@ -27,12 +27,12 @@ function [out,logicalSlices] ...
 %   logicalSlices.. binary vector indicating the times in the timestamp
 %                   vector where the control statement is true.
 
-if ~(isrow(controls) || iscolumn(controls)) || ~iscell(controls)
+if ~(isrow(controls) || iscolumn(controls)) || ~iscell(controls) || ~ischar(controls)
     error('Improper control!');
 end
 
 if ~exist('inclusionPeriodFlag','var')
-    inclusionPeriodFlag=false;
+    inclusionPeriodFlag=true;
 end
 
 %% Get structural element requested, First N-1 = struct address
@@ -40,8 +40,10 @@ end
 % addressed by element 1 through n-1
 
 obj = structX;
-for i = 1:numel(controls)-1
-    obj = obj.(controls{i});
+if iscell(controls)
+    for i = 1:numel(controls)-1
+        obj = obj.(controls{i});
+    end
 end
 
 %% Last element in the control sequence

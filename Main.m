@@ -13,7 +13,11 @@ ploton = true;
 subjects = {'outputPilot1.masterstruct.mat'};
 load(subjects{1})
 
-%% Contrain data to times when taking good data
+%% Constrain data to times to "good data"
+% So far, in this section, this only means when the headband is detected as
+% connected. It could in principal with the functions I've written be
+% improved by excluding times in which one or more electrodes were detected
+% as having a poor connection.
 
 % First, let's select a subset of the data where the headband is definitely
 % on and connected.
@@ -51,29 +55,60 @@ clear m i s;
 
 % Now here, we apply the ranges found in which the headset was detected as
 % on to all of the struct elements
-eeg = applyTimes(m, touching_ranges);
+m = applyTimes(m, touching_ranges);
+
+%% Remove all entries in the game data that represent eventIds not = 1
+% This is because there are multiple eventTypes per rewarded and
+% recation-timed event.
+
+only1stEvent    = getTimes(m.game.eventType, '$val == 1');
+m.game          = applyTimes(m.game, only1stEvent);
+
+%% Acquire key times for correct/incorrect and highRT/lowRT
+
+% Acquire incorrect and correct timestamp ranges
+correct     = getTime(m.game.incorrect,'diff($val(:,2)==1) == 1');
+incorrect   = getTime(m.game.correct,'diff($val(:,2)==-1) == 1');
+
+% Compute upper and lower quantile of reaction times
+rtMedian = median(m.game.reaction);
+highRT = getTime(m.game.reaction, ['$val > ' num2str(rtMedian)]);
+lowRT = getTime(m.game.reaction,['$val < ' num2str(rtMedian)]);
+
 
 %% (Optional) Acqruire Spectra/Coherence/MP at Triggers
 
-correct = getTime(m,{'game','correct','diff($val(:,2)==1) == 1'});
-incorrect = getTime(m,{'game','correct','diff($val(:,2)==-1) == 1'});
+% The following doesn't work (yet!) with the currect data. Chronux and MP
+% code has to be tweaked, such that, when they take their ffts, to obtain
+% energy, we have to force them to instead take log(abs(energy)) ... for MP
+% algo called by MP(), this means changing a the lines in the C++ code
+% where fft computed, and recompiling. For Chronux, change fft() outputs in
+% each of the matlab functions.
 
-window = [-3 0.5]; % 3 seconds before .. 0.5 seconds after
-[C_correct,S_correct,fsc_correct,M_correct,fmp_correct] = ...
-    triggeredCS( m.eeg, 'triggers', correct, 'window', window, 'matchingpursuit',true);
-[C_incorrect,S_incorrect,fsc_incorrect,M_incorrect,fmp_incorrect] = ...
-    triggeredCS( m.eeg, 'triggers', incorrect, 'window', window, 'matchingpursuit',true);
+% window = [-3 0.5]; % 3 seconds before .. 0.5 seconds after
+% [C_correct,S_correct,fsc_correct,M_correct,fmp_correct] = ...
+%     triggeredCS( m.eeg, 'triggers', correct, 'window', window, 'matchingpursuit',true);
+% [C_incorrect,S_incorrect,fsc_incorrect,M_incorrect,fmp_incorrect] = ...
+%     triggeredCS( m.eeg, 'triggers', incorrect, 'window', window, 'matchingpursuit',true);
 
-%% Create Subject Specific CI Matrix
+%% Subject-specific Correct/Incorrect Matrix and RT-high-low matrix
 
+% (1) Time sorted C-I ranges
 C = [ correct' ones(size(correct))'];
 I = [ incorrect' zeros(size(incorrect))'];
 CI = [C; I]; CI = sortrows(CI,1);
 
-clear correct incorrect;
+% (2) Time sorted high low RT ranges
+H = [ correct' ones(size(highRT))'];
+L = [ incorrect' zeros(size(lowRT))'];
+RT = [H; L]; RT = sortrows(RT,1);
+
+% Clean up shop, some
+clear correct incorrect C I H L;
 
 %%  Slice windows of time in all structures
 
+% 
 
 
 %% Prepare for GLM on half the data
