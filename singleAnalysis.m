@@ -1,8 +1,4 @@
-
-% If run an indepdent script, define counter variable to 1
-if ~exist('cSubject','var')
-    cSubject=1;
-end
+function [data,id,mapping,CI,RT,extra] = singleAnalysis(m)
 
 %% Constrain data to times to "good data"
 % So far, in this section, this only means when the headband is detected as
@@ -121,6 +117,33 @@ controls ={};
 [data,id,mapping] = ...
     cutSegments(m,RT_this(:,1:2),controls,'equalize',true);
 
-%% Prepare for GLM on half the data
+
+%% GLM on half the data
+
+%
+[betaCI, bCIStruct ]= runGLM(CI_this(:,3),data( 1:ceil(end/2),:),...
+    identities,mapping);
+%
+[betaRT, bRTStruct] = runGLM(RT_this(:,3),data( 1:ceil(end/2),:),...
+    identities,mapping);
 
 %% Predict on the other half
+
+% 
+yCIpredict = data( ceil(end/2)+1:end,:) * betaCI;
+
+%
+yRTpredict = data( ceil(end/2)+1:end,:) * betaRT;
+
+
+%% Package additional outputs
+extra.predictCI = yCIpredict;
+extra.predictRT = yRTpredict;
+
+extra.bCI = betaCI;
+extra.bRT = betaRT;
+
+extra.struct_bRT = bRTStruct;
+extra.struct_bCI = bCIStruct;
+
+end

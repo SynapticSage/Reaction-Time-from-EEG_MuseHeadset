@@ -23,7 +23,7 @@ cSubject = 1;
 for subject = subjects'
     
     load(subject)
-    OneSubject;
+    [] = singleAnalysis(m);
     cSubject = cSubject + 1;
     
 end
@@ -38,6 +38,21 @@ end
 % Have to ensure each of the rows contains the same number of data of each
 % type
 
-%% Prediction on half
+combineSegments()
+
+%% GLM on half the data
+
+%
+[betaCI, bCIStruct ]= runGLM(CI_this(:,3),data( 1:ceil(end/2),:),...
+    identities,mapping);
+%
+[betaRT, bRTStruct] = runGLM(RT_this(:,3),data( 1:ceil(end/2),:),...
+    identities,mapping);
 
 %% Predict on the other half
+
+% 
+yCIpredict = data( ceil(end/2)+1:end,:) * betaCI;
+
+%
+yRTpredict = data( ceil(end/2)+1:end,:) * betaRT;
