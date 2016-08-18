@@ -38,7 +38,8 @@ for control = controls
     [data{cDataId}, id{cDataId}, counts{cDataId}] = ...
         grabControl(structX,ranges,control{1},cDataId);
     
-    mapping{cDataId} = control{end};
+    mapping{cDataId} = sprintf('%s_',control{1}{:});
+    mapping{cDataId} = mapping{cDataId}(1:end-1);
     
     cDataId=cDataId + 1;
     
@@ -51,8 +52,8 @@ end
 % This means that we can simply create a matrix to return
 if equalize
     
-    data = cat(data,1);
-    id = cat(id,1);
+    data = cat(1,data{:});
+    id = cat(1,id{:});
     
     return;
 else
@@ -148,17 +149,17 @@ end
         dataOut         = cell(1,numel(data{1}));
         identitiesOut   = cell(1,numel(data{1}));
         % --
-        for d = 1:numel(data)
+        for d = 1:numel(data{1})
             
-            dataOut{d} = singularCombine();
-            identities{d} = singularCombine();
+            dataOut{d} = singularCombine(data,d);
+            identitiesOut{d} = singularCombine(identities,d);
             
         end
         
         function out = singularCombine(data,d)
             out = [];
-            for elem = data
-                out = data{elem}{d};
+            for elem = 1:numel(data)
+                out = [out; data{elem}{d}];
             end
             if iscolumn(out), out=out'; end
         end

@@ -56,7 +56,7 @@ m.game          = applyTimes(m.game, only1stEvent);
 
 %% Acquire key times for correct/incorrect and highRT/lowRT
 
-window = [1.5 0.5]; % 1.5 seconds before .. 0.5 seconds after
+window = [2 0]; % 2 seconds before .. 0 seconds after
 
 % Acquire incorrect and correct timestamp ranges
 correct     = getTime(m.game.correct,'$val(:,2) == 1',...
@@ -96,12 +96,16 @@ CI = [C; I]; CI = sortrows(CI,2);
 % (2) Time sorted high low RT ranges
 H = [ ones(size(highRT,1),1) highRT ];
 L = [ zeros(size(lowRT,1),1) lowRT ];
-RT = [C; I]; RT = sortrows(RT,2);
+RT = [H; L]; RT = sortrows(RT,2);
 
 % Clean up shop, some
 clear correct incorrect lowRT highRT C I H L;
 
 %%  Acquire GLM variables given those windows of time
+
+% Cut times
+mCI = applyTimes(m, CI(:,2:3));
+mRT = applyTimes(m, RT(:,2:3));
 
 % Slice out first half of time
 % half_times = getTime(eeg.raw,'$val(:,1) > median($val(:,1))');
@@ -119,29 +123,26 @@ controls ={...
     {'eeg','abs','beta'},...
     {'eeg','abs','alpha'}
     };
-[data,id,mapping] = ...
-    cutSegments(m,CI(:,2:3),controls,'equalize',true);
+[dataC,idC,mappingC] = ...
+    cutSegments(mCI,CI(:,2:3),controls,'equalize',true);
 % -- Reaction-time Slow / Reaction-time Fast
-[data,id,mapping] = ...
-    cutSegments(m,RT(:,2:3),controls,'equalize',true);
+[dataR,idR,mappingR] = ...
+    cutSegments(mRT,RT(:,2:3),controls,'equalize',true);
 
 
 %% GLM on half the data
 
 %
-[betaCI, bCIStruct ]= runGLM(CI(:,3),data( 1:ceil(end/2),:),...
-    identities,mapping);
+[betaCI, bCIStruct ]= runGLM(CI(1:ceil(end/2),1),dataC( 1:ceil(end/2),:),...
+    idC(1:ceil(end/2),:),mappingC);
 %
-[betaRT, bRTStruct] = runGLM(RT(:,3),data( 1:ceil(end/2),:),...
-    identities,mapping);
+[betaRT, bRTStruct] = runGLM(RT(1:ceil(end/2),1),dataR( 1:ceil(end/2),:),...
+    idR(1:ceil(end/2),:),mappingR);
 
 %% Predict on the other half
 
-% 
-yCIpredict = data( ceil(end/2)+1:end,:) * betaCI;
-
-%
-yRTpredict = data( ceil(end/2)+1:end,:) * betaRT;
+plotGLM(dataC,CI(:,1),betaCI);
+plotGLM(dataR,RT(:,1),betaRT);
 
 
 %% Package additional outputs

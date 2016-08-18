@@ -3,6 +3,9 @@ function [beta,betaStruct] = runGLM(Y,X,identities,mapping)
 % additionally creates an additional representation where each beta is
 % dropped into a struct by the name of its field
 
+ploton=true;
+
+X=X';
 
 % Compute the core GLM
 % Perhaps like the cellular GLM, each of the types of data should be
@@ -29,19 +32,27 @@ else
     error('Input X improper type!');
 end
 
+if ploton
+    plotGLM(X',Y,beta);
+end
+
 % If identities and mapping provided, then delineat each of the betas, what
 % type of variable it belongs to, and drop it into betaStruct, which keeps
 % tabs on who's whos
 betaStruct = struct();
 if exist('identities','var') && exist('mapping','var')
     
-    for item = mapping'
+    for item = 1:numel(mapping)
         
-        number = item{1};
-        name = item{2};
+        number = item;
+        name = mapping(item);
         
-        betaStruct.(name) = beta(identities == number);
+        betaStruct.(name{1}) = beta(identities(1,:) == number);
         
+    end
+    
+    if ploton
+        plotBetaStruct(betaStruct,mapping);
     end
     
 end
