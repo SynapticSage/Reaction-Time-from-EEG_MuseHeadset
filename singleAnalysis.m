@@ -89,14 +89,14 @@ lowRT = getTime(m.game.RT,['$val(:,2) < ' num2str(rtMedian)],...
 %% Subject-specific Correct/Incorrect Matrix and RT-high-low matrix
 
 % (1) Time sorted C-I ranges
-C = [ correct' ones(size(correct))'];
-I = [ incorrect' zeros(size(incorrect))'];
-CI_this = [C; I]; CI_this = sortrows(CI,1);
+C = [ ones(size(correct,1),1) correct ];
+I = [ zeros(size(incorrect,1),1) incorrect ];
+CI = [C; I]; CI = sortrows(CI,2);
 
 % (2) Time sorted high low RT ranges
-H = [ correct' ones(size(highRT))'];
-L = [ incorrect' zeros(size(lowRT))'];
-RT_this = [H; L]; RT_this = sortrows(RT,1);
+H = [ ones(size(highRT,1),1) highRT ];
+L = [ zeros(size(lowRT,1),1) lowRT ];
+RT = [C; I]; RT = sortrows(RT,2);
 
 % Clean up shop, some
 clear correct incorrect lowRT highRT C I H L;
@@ -112,22 +112,27 @@ clear correct incorrect lowRT highRT C I H L;
 % to help reconstruct the managerie of different data in each trial row of
 % the matrix
 % -- Correct / Incorrect
-controls ={};
+controls ={...
+    {'eeg','abs','theta'},...
+    {'eeg','abs','delta'},...
+    {'eeg','abs','gamma'},...
+    {'eeg','abs','beta'},...
+    {'eeg','abs','alpha'}
+    };
 [data,id,mapping] = ...
-    cutSegments(m,CI_this(:,1:2),controls,'equalize',true);
+    cutSegments(m,CI(:,2:3),controls,'equalize',true);
 % -- Reaction-time Slow / Reaction-time Fast
-controls ={};
 [data,id,mapping] = ...
-    cutSegments(m,RT_this(:,1:2),controls,'equalize',true);
+    cutSegments(m,RT(:,2:3),controls,'equalize',true);
 
 
 %% GLM on half the data
 
 %
-[betaCI, bCIStruct ]= runGLM(CI_this(:,3),data( 1:ceil(end/2),:),...
+[betaCI, bCIStruct ]= runGLM(CI(:,3),data( 1:ceil(end/2),:),...
     identities,mapping);
 %
-[betaRT, bRTStruct] = runGLM(RT_this(:,3),data( 1:ceil(end/2),:),...
+[betaRT, bRTStruct] = runGLM(RT(:,3),data( 1:ceil(end/2),:),...
     identities,mapping);
 
 %% Predict on the other half

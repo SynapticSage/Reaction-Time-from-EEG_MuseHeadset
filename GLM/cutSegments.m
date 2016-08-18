@@ -19,8 +19,8 @@ function [data,id,mapping,counts] = cutSegments(structX,ranges,controls,varargin
 
 % Parse optional inputs
 p = inputParser;
-p.addArgument('equalize',false,@logical);
-p.parseInputs(varargin{:});
+p.addParameter('equalize',false,@logical);
+p.parse(varargin{:});
 equalize=p.Results.equalize;
 
 % For each control, collect the data, and deposit it into a cell. Also
@@ -36,7 +36,7 @@ counts = cell(1,numel(controls));
 for control = controls
     
     [data{cDataId}, id{cDataId}, counts{cDataId}] = ...
-        grabControl(structX,ranges,control,cDataId);
+        grabControl(structX,ranges,control{1},cDataId);
     
     mapping{cDataId} = control{end};
     
@@ -79,7 +79,7 @@ end
         
         % Zero in on the object in the control
         obj=structX;
-        for c = control'
+        for c = control
             obj=obj.(c{1});
         end
         
@@ -91,7 +91,7 @@ end
         % ----
         for r = ranges'
             slice = obj >= r(1) & obj <= r(2);
-            data{cRanges} = obj(slice);
+            data{cRanges} = reshape(obj(slice,2:end),[],1);
             identifiers{cRanges} = cDataId*ones(size(data{cRanges}));
             cRanges = cRanges + 1;
         end
