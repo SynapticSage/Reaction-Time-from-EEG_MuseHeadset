@@ -67,19 +67,22 @@ structX = recurse(structX,ranges);
         end
         
         % Get a binary vector of the times that match the ranges
-        masterslice = zeros(size(obj,1),1);
-        for r = size(ranges,1)
+        masterslice = false(size(obj,1),1);
+        for r = 1:size(ranges,1)
             
             if timestampMode == 2
                 timestamps = obj(:,1);
             end
             
-            slice = timestamps > ranges(r,1) & timestamps < ranges(r,2);
+            slice = timestamps >= ranges(r,1) & timestamps <= ranges(r,2);
             masterslice = slice | masterslice;
             
         end
         
         % Cut only the values in the inclusion ranges
+        if reporton
+            fprintf('\tPercent remaining %2.2f %%\n', 100*sum(masterslice)/numel(masterslice));
+        end
         out = obj(masterslice,:);
         
     end

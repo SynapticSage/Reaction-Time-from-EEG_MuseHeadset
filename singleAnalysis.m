@@ -51,7 +51,7 @@ m = applyTimes(m, touching_ranges);
 % This is because there are multiple eventTypes per rewarded and
 % recation-timed event.
 
-only1stEvent    = getTime(m.game.eventType, '$val == 1');
+only1stEvent    = getTime(m.game.eventType, '$val(:,2) == 1');
 m.game          = applyTimes(m.game, only1stEvent);
 
 %% Acquire key times for correct/incorrect and highRT/lowRT
@@ -59,16 +59,16 @@ m.game          = applyTimes(m.game, only1stEvent);
 window = [1.5 0.5]; % 1.5 seconds before .. 0.5 seconds after
 
 % Acquire incorrect and correct timestamp ranges
-correct     = getTime(m.game.incorrect,'$val(:,2) == 1',...
+correct     = getTime(m.game.correct,'$val(:,2) == 1',...
     'eachseparate',true,'window',window);
 incorrect   = getTime(m.game.correct,'$val(:,2)==-1', ...
     'eachseparate',true,'window',window);
 
 % Compute upper and lower quantile of reaction times
-rtMedian = median(m.game.reaction);
-highRT = getTime(m.game.reaction, ['$val > ' num2str(rtMedian)],...
+rtMedian = median(m.game.RT(:,2));
+highRT = getTime(m.game.RT, ['$val(:,2) > ' num2str(rtMedian)],...
     'eachseparate',true,'window',window);
-lowRT = getTime(m.game.reaction,['$val < ' num2str(rtMedian)],...
+lowRT = getTime(m.game.RT,['$val(:,2) < ' num2str(rtMedian)],...
     'eachseparate',true,'window',window);
 
 

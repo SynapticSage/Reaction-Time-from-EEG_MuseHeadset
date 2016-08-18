@@ -15,7 +15,7 @@
 % OUTPUTS: If the time ranges are different, it attempts to cut all vector
 % sets from different data types to a common size.
 % If 
-function [data,id,mapping] = cutSegments(structX,ranges,controls,varargin)
+function [data,id,mapping,counts] = cutSegments(structX,ranges,controls,varargin)
 
 % Parse optional inputs
 p = inputParser;
@@ -31,10 +31,11 @@ cDataId = 1; % data counter
 data    = cell(1,numel(controls));
 id      = cell(1,numel(controls));
 mapping = cell(1,numel(controls));
+counts = cell(1,numel(controls));
 % ----
 for control = controls
     
-    [data{cDataId}, id{cDataId}] = ...
+    [data{cDataId}, id{cDataId}, counts{cDataId}] = ...
         grabControl(structX,ranges,control,cDataId);
     
     mapping{cDataId} = control{end};
@@ -61,7 +62,7 @@ else
 end
 
 %% Helper function: grabControl
-    function [data,identifiers] = grabControl(structX,ranges,...
+    function [data,identifiers,counts] = grabControl(structX,ranges,...
             control,cDataId)
         % Grabs sequences for a single variable and if option is on to
         % equalize lengths, then that is done. It returns three data types
@@ -98,7 +99,9 @@ end
         % if equalize flag on, then ensure
         if equalize
             data         = equalizeSizes(data);
-            identifiers  = equalizeSizes(identifiers);
+            [identifiers,counts] = equalizeSizes(identifiers);
+        else
+            counts = NaN;
         end
         
     end
@@ -107,7 +110,7 @@ end
 % Prupose: equalizes size of first dimension of all cell elements (time
 % dimension in our use)
 % Inputs: cells of eeg, spectrogram or spectrogram-like objects
-    function dat = equalizeSizes(dat)
+    function [dat,smallestSize] = equalizeSizes(dat)
         
         if iscolumn(dat), dat=dat';end
         smallestSize = inf;

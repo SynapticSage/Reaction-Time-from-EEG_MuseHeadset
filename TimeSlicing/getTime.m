@@ -37,7 +37,7 @@ end
 p = inputParser;
 p.addParameter('useinclusion',true,@islogical);     
 p.addParameter('eachseparate',false,@islogical);
-p.addParameter('window',[0 0],@(x) isnumerical(x) && numel(x)==2 && ~sum(x<0));
+p.addParameter('window',[0 0],@(x) isnumeric(x) && numel(x)==2 && ~sum(x<0));
 p.parse(varargin{:});
 % Set variables controlled by optionals
 inclusionPeriodFlag = p.Results.useinclusion;
@@ -64,6 +64,9 @@ end
 % First, we apply the evaluate the statement to obtain a logical vetor of
 % good times that fit our criteria
 if ~isempty(obj)
+    if ischar(controls)
+        controls = {controls};
+    end
     logicalSlices = implementControlStatement(obj, controls{end});
 else
     error('Location is empty!');
@@ -114,6 +117,8 @@ end
         % Calculates the start and end times for all exclusion periods, given a
         % time vector and an include vector of 1s and 0s of the same length.
         
+        assert(isrow(included)||iscolumn(included),'Your control statement outputs more than a single row or column.');
+        
         % Ensure time is a column
         if isrow(time), time=time(:); end
 
@@ -133,8 +138,24 @@ end
         if (included(end) == 1)
             endtimes = [endtimes; length(included)];
         end
+        
+        if numel(starttimes) > numel(endtimes)
+            if starttimes(1) < endtimes(1)
+                starttimes(1) = [];
+            else
+                starttimes(end) = [];
+            end
+        elseif numel(endtimes) > numel(starttimes)
+            if endtimes(1) < starttimes(1)
+                endtimes(1) = [];
+            else
+                endtimes(end) = [];
+            end
+        end
     
         % Create inclusion vector
         includePeriods = [time(starttimes) time(endtimes)];
+        
+        assert( sum(starttimes-endtimes) <= 0 );
     end
 end
