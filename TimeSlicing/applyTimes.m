@@ -2,6 +2,11 @@ function structX = applyTimes(structX,ranges)
 % This function applies time inclusion ranges to any of the game, eeg,
 % behavior structs
 
+% Flags
+reporton = true;
+global location;
+location = {};
+
 % Figure out the timestamp determination mode ... whether there is one
 % timestamp set for the entire list of variables in structX (e.g. if
 % structX is "game"), or if there is unique timestamp per field in the
@@ -29,7 +34,11 @@ structX = recurse(structX,ranges);
             
             % RECURSE through the fields
             for f = fields(obj)'
+                location{end+1}=[f{1} '.'];
                 obj.(f{1}) = recurse(obj.(f{1}),ranges);
+                if ~isempty(location)
+                    location=location(1:end-1);
+                end
             end
             
         else
@@ -52,6 +61,10 @@ structX = recurse(structX,ranges);
 %% Helper function
     function out = apply(obj,ranges)
         % Handles the actual application of the time ranges
+        
+        if reporton
+            fprintf('Applying to .. %s\n', strcat(location{:}));
+        end
         
         % Get a binary vector of the times that match the ranges
         masterslice = zeros(size(obj,1),1);

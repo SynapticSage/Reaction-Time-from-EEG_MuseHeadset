@@ -28,7 +28,7 @@ function [out,logicalSlices] ...
 %                   vector where the control statement is true.
 
 % Check controls for flaws
-if ~(isrow(controls) || iscolumn(controls)) || ~iscell(controls) || ~ischar(controls)
+if ~(isrow(controls) || iscolumn(controls)) && ~(iscell(controls) || ischar(controls))
     error('Improper control!');
 end
 
@@ -49,7 +49,7 @@ eachSeparateFlag = p.Results.eachseparate; window = p.Results.window;
 % addressed by element 1 through n-1
 
 obj = structX;
-if iscell(controls)
+if iscell(controls) && numel(controls) > 1
     for i = 1:numel(controls)-1
         obj = obj.(controls{i});
     end
@@ -63,7 +63,11 @@ end
 
 % First, we apply the evaluate the statement to obtain a logical vetor of
 % good times that fit our criteria
-logicalSlices = implementControlStatement(obj, controls{end});
+if ~isempty(obj)
+    logicalSlices = implementControlStatement(obj, controls{end});
+else
+    error('Location is empty!');
+end
 
 
 % The vector needs to be translated into times

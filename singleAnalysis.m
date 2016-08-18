@@ -1,5 +1,8 @@
 function [data,id,mapping,CI,RT,extra] = singleAnalysis(m)
 
+%% Flags
+ploton=false;
+
 %% Constrain data to times to "good data"
 % So far, in this section, this only means when the headband is detected as
 % connected. It could in principal with the functions I've written be
@@ -14,12 +17,12 @@ function [data,id,mapping,CI,RT,extra] = singleAnalysis(m)
 % statement to select times you want. These can either be specific times
 % it's true, or inclusion ranges. If you plan to constrain all of your data
 % which can be in different time bases, then use inclusion periods.
-controls = {'headband','touching_forehead','$val(:,2) > 0'};
-[touching_ranges, ~] = getTime(behavior,controls,true);
+controls = {'$val(:,2) > 0'};
+[touching_ranges, ~] = getTime(m.beh.headband.touching_forehead,controls);
 
 % Show that range is capture
-figure;
 if ploton
+    figure;
     plot(...
         m.beh.headband.touching_forehead(:,1),...
         m.beh.headband.touching_forehead(:,2)...
@@ -36,9 +39,9 @@ end
 % signals
 isgood = m.beh.headband.is_good(:,2:end);
 % Get best mean
-[m,i] = max(mean(isgood,1)); s = std( isgood(:,i),1 );
-badelectrodes = find( mean(isgood,1) > (m+2*s) | mean(isgood,1) < (m-2*s) );
-clear m i s;
+[M,i] = max(mean(isgood,1)); s = std( isgood(:,i),1 );
+badelectrodes = find( mean(isgood,1) > (M+2*s) | mean(isgood,1) < (M-2*s) );
+clear M i s;
 
 % Now here, we apply the ranges found in which the headset was detected as
 % on to all of the struct elements
@@ -48,7 +51,7 @@ m = applyTimes(m, touching_ranges);
 % This is because there are multiple eventTypes per rewarded and
 % recation-timed event.
 
-only1stEvent    = getTimes(m.game.eventType, '$val == 1');
+only1stEvent    = getTime(m.game.eventType, '$val == 1');
 m.game          = applyTimes(m.game, only1stEvent);
 
 %% Acquire key times for correct/incorrect and highRT/lowRT
