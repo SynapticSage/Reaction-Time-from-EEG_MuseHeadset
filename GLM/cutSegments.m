@@ -19,9 +19,11 @@ function [data,id,mapping,counts] = cutSegments(structX,ranges,controls,varargin
 
 % Parse optional inputs
 p = inputParser;
-p.addParameter('equalize',false,@logical);
+p.addParameter('equalize',false,@islogical);
+p.addParameter('downsample',false,@isreal);
 p.parse(varargin{:});
 equalize=p.Results.equalize;
+downsample =p.Results.downsample;
 
 % For each control, collect the data, and deposit it into a cell. Also
 % deposit a vector of equal size with a data identifier.
@@ -31,7 +33,7 @@ cDataId = 1; % data counter
 data    = cell(1,numel(controls));
 id      = cell(1,numel(controls));
 mapping = cell(1,numel(controls));
-counts = cell(1,numel(controls));
+counts  = cell(1,numel(controls));
 % ----
 for control = controls
     
@@ -84,6 +86,7 @@ end
             obj=obj.(c{1});
         end
         
+        
         % Instatitiate storage objects
         % ----
         data = cell(1,size(ranges,1));
@@ -91,9 +94,22 @@ end
         cRanges=1;
         % ----
         for r = ranges'
+            
             slice = obj >= r(1) & obj <= r(2);
-            data{cRanges} = reshape(obj(slice,2:end),[],1);
-            identifiers{cRanges} = cDataId*ones(size(data{cRanges}));
+            
+            % If downsample! then we should mean time into number of segments
+            % equal to the downsample .. doesn't actually fully fit with the
+            % definition of a downsample (like taking every 10th sample) but
+            % metaphorically, acheives the effect
+            if downsample
+                data{cRanges} = ...
+                    handleDownsamp(obj(slice,2:end),downsample);
+            else
+                data{cRanges}           = reshape(obj(slice,2:end),[],1);
+            end
+            
+            identifiers{cRanges}    = cDataId*ones(size(data{cRanges}));
+            
             cRanges = cRanges + 1;
         end
         
@@ -163,6 +179,29 @@ end
             end
             if iscolumn(out), out=out'; end
         end
+    end
+
+%% Helper function: handleDownsamp
+% Purpose .. Takes a TxN data, and downsamples it such that you have D<T
+% and DXN data. It averages each of the D segments.
+
+    function [out] = handleDownsamp(data,D)
+        
+        % if not enough for D segments, make that happen
+%         leftover = mod(size(data,1),D);
+%         data = [data; nan( D-leftover, size(data,2) )];
+        
+        movement = size(data,1)/(D+1);
+        mRanges = 1 + repmat(movement,1,D+1).* (0:D);
+
+        % get meaned segments
+        for i = 1:numel(mRanges)-1
+             out(i,:) = mean( data( floor(mRanges(i)):ceil(mRanges(i+1)), : ) );
+        end
+        
+        % linearize shape
+        out = reshape(out,[],1);
+        
     end
 
 end

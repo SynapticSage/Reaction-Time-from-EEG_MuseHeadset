@@ -3,7 +3,7 @@ function [beta,betaStruct] = runGLM(Y,X,identities,mapping)
 % additionally creates an additional representation where each beta is
 % dropped into a struct by the name of its field
 
-ploton=true;
+ploton=false;
 
 X=X';
 

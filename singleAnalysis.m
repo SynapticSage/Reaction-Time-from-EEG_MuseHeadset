@@ -1,7 +1,30 @@
-function [data,id,mapping,CI,RT,extra] = singleAnalysis(m)
+function [outStruct] = singleAnalysis(m,varargin)
+
+close all;
 
 %% Flags
-ploton=false;
+saveall=false;
+p = inputParser;
+p.addParameter('ploton',false,@islogical);
+p.addParameter('remove_practice',false,@islogical);
+p.addParameter('downsample',false,@isreal);
+p.addParameter('samplesize',1,@isnumeric);
+p.addParameter('folder','~/Data/Sekuler/default',@ischar);
+p.parse(varargin{:});
+
+ploton=p.Results.ploton;
+remove_practice=p.Results.remove_practice;
+downsampleSize=p.Results.downsample;
+samplesize = p.Results.samplesize;
+folder = p.Results.folder;
+
+% PRINT PROPERTIES TO SCREEN -- to let user know what mode is being used
+words = {'False','True'};
+fprintf('\nMODES');
+fprintf('\n------------');
+fprintf('\nRemove Practice Sessions \t => %s',words{remove_practice+1});
+fprintf('\DownSample \t\t\t => %s',words{(downsampleSize>0) +1});
+fprintf('\n------------\n');
 
 %% Constrain data to times to "good data"
 % So far, in this section, this only means when the headband is detected as
@@ -47,6 +70,13 @@ clear M i s;
 % on to all of the struct elements
 m = applyTimes(m, touching_ranges);
 
+%% If user requests to remove training levels, strip them from the data
+
+if remove_practice
+    nonTrainingEvent    = getTime(m.game.level, '$val(:,2) > 5');
+    nonTrainingEvent    = applyTimes(m, nonTrainingEvent);
+end
+
 %% Remove all entries in the game data that represent eventIds not = 1
 % This is because there are multiple eventTypes per rewarded and
 % recation-timed event.
@@ -56,7 +86,7 @@ m.game          = applyTimes(m.game, only1stEvent);
 
 %% Acquire key times for correct/incorrect and highRT/lowRT
 
-window = [2 0]; % 2 seconds before .. 0 seconds after
+window = [2.5 0]; % 2 seconds before .. 0 seconds after
 
 % Acquire incorrect and correct timestamp ranges
 correct     = getTime(m.game.correct,'$val(:,2) == 1',...
@@ -66,7 +96,7 @@ incorrect   = getTime(m.game.correct,'$val(:,2)==-1', ...
 
 % Compute upper and lower quantile of reaction times
 rtMedian = median(m.game.RT(:,2));
-highRT = getTime(m.game.RT, ['$val(:,2) > ' num2str(rtMedian)],...
+highRT = getTime(m.game.RT, ['$val(:,2) >= ' num2str(rtMedian)],...
     'eachseparate',true,'window',window);
 lowRT = getTime(m.game.RT,['$val(:,2) < ' num2str(rtMedian)],...
     'eachseparate',true,'window',window);
@@ -97,6 +127,7 @@ CI = [C; I]; CI = sortrows(CI,2);
 H = [ ones(size(highRT,1),1) highRT ];
 L = [ zeros(size(lowRT,1),1) lowRT ];
 RT = [H; L]; RT = sortrows(RT,2);
+RT(:,1) = (m.game.RT(:,2));
 
 % Clean up shop, some
 clear correct incorrect lowRT highRT C I H L;
@@ -116,6 +147,9 @@ mRT = applyTimes(m, RT(:,2:3));
 % to help reconstruct the managerie of different data in each trial row of
 % the matrix
 % -- Correct / Incorrect
+% Format of controls input:
+
+
 controls ={...
     {'eeg','abs','theta'},...
     {'eeg','abs','delta'},...
@@ -123,36 +157,91 @@ controls ={...
     {'eeg','abs','beta'},...
     {'eeg','abs','alpha'}
     };
+
 [dataC,idC,mappingC] = ...
-    cutSegments(mCI,CI(:,2:3),controls,'equalize',true);
+    cutSegments(mCI,CI(:,2:3),controls,'equalize',true,'downsample',downsampleSize);
 % -- Reaction-time Slow / Reaction-time Fast
 [dataR,idR,mappingR] = ...
-    cutSegments(mRT,RT(:,2:3),controls,'equalize',true);
+    cutSegments(mRT,RT(:,2:3),controls,'equalize',true,'downsample',downsampleSize);
+
+% INITIALIZE TRACKERS
+% ----
+YC=struct('ypred','','a','','t','','p','') ;
+YR=struct('ypred','','a','','t','','p','') ;
+betaCI = {}; bCIStruct = {};
+betaRT = {}; bRTStruct = {};
+% -----
+for s = 1:samplesize
+    %% GLM on half the data
+
+    % Randomly sample half
+    randsetC    = randperm( size(CI,1) );
+    training    = randsetC(1:ceil(end/2));
+    predicting  = randsetC(ceil(end/2)+1:end);
+
+    % Run GLM
+    [betaCI{s}, bCIStruct{s} ] = runGLM(CI(training,1),dataC(training,:),...
+        idC(training,:),mappingC);
+
+    % Run GLM
+    [betaRT{s}, bRTStruct{s}] = runGLM(RT(training,1),dataR(training,:),...
+        idR(training,:),mappingR);
+
+    %% Predict on the other half
+
+    fprintf('\tSample %d - CORRECT INCORRECT\n',s);
+    [YC(s).ypred,YC(s).a,YC(s).t,YC(s).p]...
+        =analyzeGLM(dataC,CI(:,1),betaCI{s},...
+        'runstats',{training,predicting},...
+        'ploton',ploton);
+    fprintf('\tSample %d - REACTION TIME\n',    s);
+    [YR(s).ypred,YR(s).a,YR(s).t,YR(s).p]...
+        =analyzeGLM(dataR,RT(:,1),betaRT{s},...
+        'runstats',{training,predicting},...
+        'ploton',ploton);
+    
+end
+
+%% Combine stats
+
+combineStats(YC, @mean, 'mean','Correct/Incorrect');
+combineStats(YR, @mean, 'mean','ReactionTime');
+    
+%% Package outputs
+
+outStruct.CI=struct();
+outStruct.RT=struct();
+
+outStruct.CI.pred = YR;
+outStruct.RT.pred = YC;
+
+outStruct.CI.beta = betaCI;
+outStruct.RT.beta = betaRT;
+
+outStruct.RT.betaSegments = bRTStruct;
+outStruct.CI.betaSegments = bCIStruct;
+
+%% Save all figures
+
+warning off; mkdir(folder); warning on;
+currdir=pwd; cd(folder);
 
 
-%% GLM on half the data
-
-%
-[betaCI, bCIStruct ]= runGLM(CI(1:ceil(end/2),1),dataC( 1:ceil(end/2),:),...
-    idC(1:ceil(end/2),:),mappingC);
-%
-[betaRT, bRTStruct] = runGLM(RT(1:ceil(end/2),1),dataR( 1:ceil(end/2),:),...
-    idR(1:ceil(end/2),:),mappingR);
-
-%% Predict on the other half
-
-plotGLM(dataC,CI(:,1),betaCI);
-plotGLM(dataR,RT(:,1),betaRT);
-
-
-%% Package additional outputs
-extra.predictCI = yCIpredict;
-extra.predictRT = yRTpredict;
-
-extra.bCI = betaCI;
-extra.bRT = betaRT;
-
-extra.struct_bRT = bRTStruct;
-extra.struct_bCI = bCIStruct;
+h = get(0,'children');
+if saveall
+    for i=1:length(h)
+      fprintf('\nSaving %d', i);
+      saveas(h(i), ['figure' num2str(i)], 'fig');
+      saveas(h(i), ['figure' num2str(i)], 'png');
+    end
+else
+    for i=length(h)-1:length(h)
+      fprintf('\nSaving %d', i);
+      saveas(h(i), ['figure' num2str(i)], 'fig');
+      saveas(h(i), ['figure' num2str(i)], 'png');
+    end
+end
+    
+cd(currdir);
 
 end

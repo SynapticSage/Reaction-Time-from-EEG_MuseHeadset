@@ -6,53 +6,70 @@
 % ranges instead of specific trigger points, which is necessary when you
 % need to condition the data on mutiple paramters.
 
-% Flags
 ploton = true;
 
-% WHICH DATA TO LOAD
-subjects = {...
-    's0.masterstruct.mat',...
-    's1.masterstruct.mat',...
-    's2.masterstruct.mat',...
-    's3.masterstruct.mat'...
-    ...'s4.masterstruct.mat',...
-    };
-
-% ITERATE OVER SINGLE-SUBJECT SCRIPT
-cSubject = 1;
-for subject = subjects'
+% Controls which combo of properties to run the analysis with
+% ---------
+remove_practice = {'true','false'};
+downsample = {'false','10','20'};
+samplesize = {'10','50','100'};
+% --------
+for r = remove_practice
+for d = downsample
+for s = samplesize
     
-    load(subject)
-    [] = singleAnalysis(m);
-    cSubject = cSubject + 1;
+    sVal = str2double(s{1});
+    rVal = str2double(r{1});
+    dVal = str2num(d{1});
+
+    % WHICH DATA TO LOAD
+    subjects = {...
+        's0.masterstruct.mat',...
+        's1.masterstruct.mat',...
+        's2.masterstruct.mat',...
+        's3.masterstruct.mat'...
+        ...'s4.masterstruct.mat',...
+        };
+    outStruct=cell(1,numel(subjects));
+
+    % ITERATE OVER SINGLE-SUBJECT SCRIPT
+    cSubject = 1;
+    for subject = subjects'
+
+        load(subject)
+        
+        outStruct{cSubject} = singleAnalysis(m, ...
+            'remove_practive', rVal, 'downsample', dVal, 'samplesize', sVal);
+        
+        cSubject = cSubject + 1;
+
+    end
+
+    % Script outputs -- 
+    % (Normally I don't use scripts like this ... functions are better and less
+    % opaque)
+    % 
+
+
+    %% Combine data sets
+    % Have to ensure each of the rows contains the same number of data of each
+    % type
+
+    comboRT = combineSegments(outStruct,'RT');
+    comboCI = combineSegments(outStruct,'CI');
+
+    %% GLM on half the data
+    
+    [betaCI, bCIStruct ]= runGLM(,,),...
+        identities,mapping);
+    %
+    [betaRT, bRTStruct] = runGLM(,,),...
+        identities,mapping);
+
+    %% Predict on the other half
+    
+    
     
 end
-
-% Script outputs -- 
-% (Normally I don't use scripts like this ... functions are better and less
-% opaque)
-% 
-
-
-%% Combine data sets
-% Have to ensure each of the rows contains the same number of data of each
-% type
-
-combineSegments()
-
-%% GLM on half the data
-
-%
-[betaCI, bCIStruct ]= runGLM(CI_this(:,3),data( 1:ceil(end/2),:),...
-    identities,mapping);
-%
-[betaRT, bRTStruct] = runGLM(RT_this(:,3),data( 1:ceil(end/2),:),...
-    identities,mapping);
-
-%% Predict on the other half
-
-% 
-yCIpredict = data( ceil(end/2)+1:end,:) * betaCI;
-
-%
-yRTpredict = data( ceil(end/2)+1:end,:) * betaRT;
+end
+end
