@@ -4,6 +4,8 @@ close all;
 
 %% Flags
 saveall=false;
+outputpred=false;
+
 p = inputParser;
 p.addParameter('ploton',false,@islogical);
 p.addParameter('remove_practice',false,@islogical);
@@ -95,10 +97,10 @@ incorrect   = getTime(m.game.correct,'$val(:,2)==-1', ...
     'eachseparate',true,'window',window);
 
 % Compute upper and lower quantile of reaction times
-rtMedian = median(m.game.RT(:,2));
-highRT = getTime(m.game.RT, ['$val(:,2) >= ' num2str(rtMedian)],...
+rtMedian = median(m.game.reaction(:,2));
+highRT = getTime(m.game.reaction, ['$val(:,2) >= ' num2str(rtMedian)],...
     'eachseparate',true,'window',window);
-lowRT = getTime(m.game.RT,['$val(:,2) < ' num2str(rtMedian)],...
+lowRT = getTime(m.game.reaction,['$val(:,2) < ' num2str(rtMedian)],...
     'eachseparate',true,'window',window);
 
 
@@ -127,7 +129,7 @@ CI = [C; I]; CI = sortrows(CI,2);
 H = [ ones(size(highRT,1),1) highRT ];
 L = [ zeros(size(lowRT,1),1) lowRT ];
 RT = [H; L]; RT = sortrows(RT,2);
-RT(:,1) = (m.game.RT(:,2));
+RT(:,1) = (m.game.reaction(:,2));
 
 % Clean up shop, some
 clear correct incorrect lowRT highRT C I H L;
@@ -181,11 +183,11 @@ for s = 1:samplesize
 
     % Run GLM
     [betaCI{s}, bCIStruct{s} ] = runGLM(CI(training,1),dataC(training,:),...
-        idC(training,:),mappingC);
+            idC(training,:),mappingC,'predictorName','Correct/Incorrect');
 
     % Run GLM
     [betaRT{s}, bRTStruct{s}] = runGLM(RT(training,1),dataR(training,:),...
-        idR(training,:),mappingR);
+        idR(training,:),mappingR,'predictorName','Reaction Time');
 
     %% Predict on the other half
 
@@ -200,26 +202,40 @@ for s = 1:samplesize
         'runstats',{training,predicting},...
         'ploton',ploton);
     
+    if ~ploton
+        close all;
+    end
+    
 end
 
 %% Combine stats
 
-combineStats(YC, @mean, 'mean','Correct/Incorrect');
-combineStats(YR, @mean, 'mean','ReactionTime');
+combineStats(YC, @mean, 'mean','Correct/Incorrect','ploton',true);
+combineStats(YR, @mean, 'mean','ReactionTime','ploton',true);
     
 %% Package outputs
 
 outStruct.CI=struct();
 outStruct.RT=struct();
 
-outStruct.CI.pred = YR;
-outStruct.RT.pred = YC;
+if outputpred
+    outStruct.CI.pred = YR;
+    outStruct.RT.pred = YC;
+    outStruct.CI.beta = betaCI;
+    outStruct.RT.beta = betaRT;
+    outStruct.RT.betaSegments = bRTStruct;
+    outStruct.CI.betaSegments = bCIStruct;
+end
 
-outStruct.CI.beta = betaCI;
-outStruct.RT.beta = betaRT;
+outStruct.CI.data = dataC;
+outStruct.CI.id = idC;
+outStruct.CI.mapping = mappingC;
+outStruct.CI.Y = CI;
 
-outStruct.RT.betaSegments = bRTStruct;
-outStruct.CI.betaSegments = bCIStruct;
+outStruct.RT.data = dataR;
+outStruct.RT.id = idR;
+outStruct.RT.mapping = mappingR;
+outStruct.RT.Y = RT;
 
 %% Save all figures
 
@@ -228,20 +244,24 @@ currdir=pwd; cd(folder);
 
 
 h = get(0,'children');
-if saveall
-    for i=1:length(h)
-      fprintf('\nSaving %d', i);
-      saveas(h(i), ['figure' num2str(i)], 'fig');
-      saveas(h(i), ['figure' num2str(i)], 'png');
-    end
-else
-    for i=length(h)-1:length(h)
-      fprintf('\nSaving %d', i);
-      saveas(h(i), ['figure' num2str(i)], 'fig');
-      saveas(h(i), ['figure' num2str(i)], 'png');
+if numel(h)>=2
+    if saveall
+        for i=1:length(h)
+          fprintf('\nSaving %d', i);
+          saveas(h(i), ['figure' num2str(i)], 'fig');
+          saveas(h(i), ['figure' num2str(i)], 'png');
+        end
+    else
+        for i=length(h)-1:length(h)
+          fprintf('\nSaving %d', i);
+          saveas(h(i), ['figure' num2str(i)], 'fig');
+          saveas(h(i), ['figure' num2str(i)], 'png');
+        end
     end
 end
-    
+
+save SingleSubject.mat;
+
 cd(currdir);
 
 end

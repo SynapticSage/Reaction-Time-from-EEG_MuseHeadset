@@ -190,13 +190,21 @@ end
         % if not enough for D segments, make that happen
 %         leftover = mod(size(data,1),D);
 %         data = [data; nan( D-leftover, size(data,2) )];
+
+        
+        if D > size(data,1)
+            data = interp1(1:size(data,1),data,1:D,'spline');
+        end
         
         movement = size(data,1)/(D+1);
         mRanges = 1 + repmat(movement,1,D+1).* (0:D);
+        out = zeros(1,size(data,2));
 
         % get meaned segments
         for i = 1:numel(mRanges)-1
-             out(i,:) = mean( data( floor(mRanges(i)):ceil(mRanges(i+1)), : ) );
+            B=min(ceil(mRanges(i+1)),size(data,1));
+            A=max(floor(mRanges(i)),1);
+            out(i,:) = mean( data( A:B, : ) );
         end
         
         % linearize shape

@@ -1,9 +1,14 @@
-function [beta,betaStruct] = runGLM(Y,X,identities,mapping)
+function [beta,betaStruct] = runGLM(Y,X,identities,mapping,varargin)
 % Handles the GLM act on the data set, and after obtaining betas,
 % additionally creates an additional representation where each beta is
 % dropped into a struct by the name of its field
 
-ploton=false;
+ploton=true;
+
+p=inputParser;
+p.addParameter('predictorName','',@ischar);
+p.parse(varargin{:});
+predictorName=p.Results.predictorName;
 
 X=X';
 
@@ -33,7 +38,7 @@ else
 end
 
 if ploton
-    plotGLM(X',Y,beta);
+    %plotGLM(X',Y,beta);
 end
 
 % If identities and mapping provided, then delineat each of the betas, what
@@ -52,7 +57,7 @@ if exist('identities','var') && exist('mapping','var')
     end
     
     if ploton
-        plotBetaStruct(betaStruct,mapping);
+        plotBetaStruct(betaStruct,mapping,'predictorName',predictorName);
     end
     
 end

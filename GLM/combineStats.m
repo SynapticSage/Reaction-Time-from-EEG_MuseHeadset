@@ -1,7 +1,10 @@
 function [allR,allP,trainR,trainP,predictR,predictP] = combineStats(YC,...
-    func,funcName,type)
+    func,funcName,type,varargin)
 
-ploton = true;
+p=inputParser;
+p.addParameter('ploton',true,@islogical);
+p.parse(varargin{:});
+ploton = p.Results.ploton;
 
 
 % Pull out vector of pearson coefficients and p-values for all the
@@ -39,25 +42,30 @@ if exist('func','var')
     end
 
     if ploton
-        binlim = [0.1,0.2];
+        binlim = [0,1];
         
-        figure;clf;
-        subplot(2,2,1);
-        histogram( sort(allR) ); hold on;
-        h=histogram( sort(trainR) );
-        h.BinWidth=0.05;
-        histogram( sort(predictR));
-        title([type ': Pearson''s R Values - Different Subsamples']);
-        legend('All','Train','Predict');
-        axis([0 1 -inf inf]);
-        subplot(2,2,2);
-        histogram( sort(allP) ); hold on;
-        h=histogram( sort(trainP) );
-        h.BinWidth=0.05;
-        histogram( sort(predictP));
-        axis([0 1 -inf inf]);
-        legend('All','Train','Predict');
-        title([type ': Pearson''s P Values - Different Subsamples']);
+        try
+            figure;clf;
+            subplot(2,2,1);
+            histogram( sort(allR), 'BinLimits',binlim); hold on;
+            h=histogram( sort(trainR), 'BinLimits',binlim );
+            h.BinWidth=0.05;
+            histogram( sort(predictR), 'BinLimits',binlim);
+            title([type ': Pearson''s R Values - Different Subsamples']);
+            legend('All','Train','Predict');
+            axis([0 1 -inf inf]);
+            subplot(2,2,2);
+            histogram( sort(allP), 'BinLimits',binlim ); hold on;
+            h=histogram( sort(trainP), 'BinLimits',binlim );
+            h.BinWidth=0.05;
+            histogram( sort(predictP), 'BinLimits',binlim);
+            axis([0 1 -inf inf]);
+            legend('All','Train','Predict');
+            title([type ': Pearson''s P Values - Different Subsamples']);
+        catch
+            save weird_error.mat
+            warning('A strange histogram error with very normal number values');
+        end
         
         subplot(2,2,3);
         scatter( 1:numel(allR), sort(allR) ); hold on;
